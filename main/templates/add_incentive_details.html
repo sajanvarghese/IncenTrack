@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+{% block title %}Add Incentive Details - IncenTrack{% endblock %}
+
+{% block content %}
+<h2>Salesman: {{ salesman.name }} | Month: {{ current_month }} {{ current_year }}</h2>
+
+<!-- Week Buttons -->
+<div>
+    <button type="button" onclick="showWeek(1)">Week 1</button>
+    <button type="button" onclick="showWeek(2)">Week 2</button>
+    <button type="button" onclick="showWeek(3)">Week 3</button>
+    <button type="button" onclick="showWeek(4)">Week 4</button>
+</div>
+<br>
+
+<form method="post">
+  {% csrf_token %}
+  {% for week in "1234" %}
+  <div id="week{{ week }}" class="week-table" style="{% if week != '1' %}display:none;{% endif %}">
+      <h3>Week {{ week }} | Total Incentive: <span id="total_incentive_{{ week }}">0</span></h3>
+      <table id="incentive-table-{{ week }}" border="1" cellpadding="5" cellspacing="0">
+          <tr>
+              <th>Route</th>
+              <th>Target</th>
+              <th>Achieved</th>
+              <th>Returns</th>
+              <th>Incentive %</th>
+              <th>Action</th>
+          </tr>
+          {% for row in incentives %}
+              {% if row.week|stringformat:"s" == week %}
+              <tr>
+                  <td>
+                      <input type="hidden" name="id_{{ week }}_{{ forloop.counter }}" value="{{ row.id }}">
+                      <input type="text" name="route_{{ week }}_{{ forloop.counter }}" value="{{ row.route }}" required>
+                  </td>
+                  <td><input type="number" name="target_{{ week }}_{{ forloop.counter }}" value="{{ row.target }}" oninput="calculateTotal({{ week }})"></td>
+                  <td><input type="number" name="achieved_{{ week }}_{{ forloop.counter }}" value="{{ row.achieved }}" oninput="calculateTotal({{ week }})"></td>
+                  <td><input type="number" name="returns_{{ week }}_{{ forloop.counter }}" value="{{ row.returns }}" oninput="calculateTotal({{ week }})"></td>
+                  <td><input type="number" name="incentive_{{ week }}_{{ forloop.counter }}" value="{{ row.incentive_percent|default:"0.02" }}" step="0.01" oninput="calculateTotal({{ week }})"></td>
+                  <td><button type="button" onclick="removeRow(this, {{ week }})">Remove</button></td>
+              </tr>
+              {% endif %}
+          {% endfor %}
+      </table>
+      <input type="hidden" name="row_count_{{ week }}" id="row_count_{{ week }}" value="0">
+      <br>
+      
+      <button type="button" onclick="addRow({{ week }})">Add Row</button>
+      <button type="submit">Save All</button>
+  </div>
+  {% endfor %}
+
+
+</form>
+
+<script>
+let rowCounts = {1:0,2:0,3:0,4:0};
+
+function showWeek(week){
+    document.querySelectorAll('.week-table').forEach(div => div.style.display = "none");
+    document.getElementById("week"+week).style.display = "block";
+}
+
+function addRow(week){
+    rowCounts[week]++;
+    const table = document.getElementById(`incentive-table-${week}`);
+    const row = table.insertRow();
+    row.innerHTML = `
+        <td><input type="text" name="route_${week}_${rowCounts[week]}" required></td>
+        <td><input type="number" name="target_${week}_${rowCounts[week]}" oninput="calculateTotal(${week})"></td>
+        <td><input type="number" name="achieved_${week}_${rowCounts[week]}" oninput="calculateTotal(${week})"></td>
+        <td><input type="number" name="returns_${week}_${rowCounts[week]}" oninput="calculateTotal(${week})"></td>
+        <td><input type="number" name="incentive_${week}_${rowCounts[week]}" value="0.02" step="0.01" oninput="calculateTotal(${week})"></td>
+        <td><button type="button" onclick="removeRow(this, ${week})">Remove</button></td>
+    `;
+    document.getElementById(`row_count_${week}`).value = rowCounts[week];
+}
+
+function removeRow(button, week){
+    const row = button.parentNode.parentNode;
+    row.parentNode.removeChild(row);
+    rowCounts[week]--;
+    document.getElementById(`row_count_${week}`).value = rowCounts[week];
+    calculateTotal(week);
+}
+
+function calculateTotal(week){
+    let total=0;
+    const table = document.getElementById(`incentive-table-${week}`);
+    const rows = table.rows;
+    for(let i=1; i<rows.length; i++){
+        const achieved = parseFloat(rows[i].querySelector(`[name^="achieved_${week}_"]`)?.value || 0);
+        const returns = parseFloat(rows[i].querySelector(`[name^="returns_${week}_"]`)?.value || 0);
+        const target = parseFloat(rows[i].querySelector(`[name^="target_${week}_"]`)?.value || 0);
+        const incentive = parseFloat(rows[i].querySelector(`[name^="incentive_${week}_"]`)?.value || 0.02);
+
+        const netAchieved = achieved - returns;
+
+        if(netAchieved >= target){
+            total += netAchieved * incentive;
+        }
+    }
+    document.getElementById(`total_incentive_${week}`).innerText = total.toLocaleString(); // add comma for display
+}
+
+window.onload = function(){
+    [1,2,3,4].forEach(w => {
+        rowCounts[w] = document.querySelectorAll(`#incentive-table-${w} tr`).length - 1;
+        calculateTotal(w);
+    });
+};
+</script>
+{% endblock %}

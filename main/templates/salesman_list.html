@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block title %}Salesmen - IncenTrack{% endblock %}
+
+{% block content %}
+<h2>Salesmen</h2>
+<table>
+    <tr>
+        <th>Name</th>
+        <th>Address</th>
+        <th>Phone</th>
+        <th>Email</th>
+        <th>Created At</th>
+        <th>Actions</th>
+    </tr>
+    {% for salesman in salesmen %}
+    <tr>
+        <td>{{ salesman.name }}</td>
+        <td>{{ salesman.address }}</td>
+        <td>{{ salesman.phone }}</td>
+        <td>{{ salesman.email }}</td>
+        <td>{{ salesman.created_at }}</td>
+        <td>
+            <button onclick="location.href='{% url 'edit_salesman' salesman.id %}'">Edit</button>
+            <button onclick="if(confirm('Are you sure?')) location.href='{% url 'delete_salesman' salesman.id %}'">Delete</button>
+        </td>
+    </tr>
+    {% empty %}
+    <tr>
+        <td colspan="6">No salesmen added yet.</td>
+    </tr>
+    {% endfor %}
+</table>
+<br>
+<button onclick="location.href='{% url 'add_salesman' %}'">Add New Salesman</button>
+{% endblock %}

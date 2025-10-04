@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block title %}{{ form.instance.id|yesno:"Edit Salesman,Add Salesman" }} - IncenTrack{% endblock %}
+
+{% block content %}
+<h2>{{ form.instance.id|yesno:"Edit Salesman,Add New Salesman" }}</h2>
+<form method="post">
+    {% csrf_token %}
+    <table>
+        <tr>
+            <td>{{ form.name.label_tag }}</td>
+            <td>{{ form.name }}</td>
+        </tr>
+        <tr>
+            <td>{{ form.address.label_tag }}</td>
+            <td>{{ form.address }}</td>
+        </tr>
+        <tr>
+            <td>{{ form.phone.label_tag }}</td>
+            <td>{{ form.phone }}</td>
+        </tr>
+        <tr>
+            <td>{{ form.email.label_tag }}</td>
+            <td>{{ form.email }}</td>
+        </tr>
+    </table>
+    <br>
+    <button type="submit">{{ form.instance.id|yesno:"Update,Add" }}</button>
+    <button type="button" onclick="location.href='{% url 'salesman_list' %}'">Cancel</button>
+</form>
+{% endblock %}

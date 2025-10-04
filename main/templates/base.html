@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{% block title %}IncenTrack{% endblock %}</title>
+    <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f4f6f9;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            background: #2c3e50;
+            color: white;
+            padding: 15px;
+            font-size: 20px;
+            text-align: center;
+        }
+
+        nav {
+            background: #34495e;
+            padding: 10px 20px;
+            display: flex;
+            gap: 20px;
+        }
+
+        nav a {
+            color: white;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        nav a:hover {
+            text-decoration: underline;
+        }
+
+        .top-bar {
+            background: #ecf0f1;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .main-content {
+            flex: 1;
+            padding: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: center;
+        }
+
+        th {
+            background: #2c3e50;
+            color: white;
+        }
+
+        footer {
+            background: #2c3e50;
+            color: white;
+            text-align: center;
+            padding: 10px;
+        }
+
+        button {
+            padding: 5px 10px;
+            border: none;
+            background: #2c3e50;
+            color: white;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+
+        button:hover {
+            background: #34495e;
+        }
+        canvas {
+        max-width: 600px;
+        max-height: 400px;
+        margin: auto;
+        }
+
+
+    </style>
+</head>
+<body>
+
+<header>
+    IncenTrack <br>
+    <small>Wholesale Sales Incentive Manager</small>
+</header>
+
+<nav>
+    <a href="{% url 'monthly_incentives' %}">Monthly Incentives</a>
+    <a href="{% url 'salesman_list' %}">Manage Salesman</a>
+    <a href="{% url 'reports' %}">Reports</a>
+</nav>
+
+<div class="top-bar">
+    <div>Admin: {{ admin_name }}</div>
+    <div><a href="{% url 'logout' %}" style="color: #e74c3c;">Logout</a></div>
+</div>
+
+<div class="main-content">
+    {% block content %}
+    <!-- child templates will inject content here -->
+    {% endblock %}
+</div>
+
+<footer>
+    © 2025 IncenTrack | Powered by Sajan Varghese
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block title %}Monthly Incentives - IncenTrack{% endblock %}
+
+{% block content %}
+<h2>Monthly Incentives</h2>
+<p><strong>Month:</strong> {{ current_month }} | <strong>Year:</strong> {{ current_year }}</p>
+
+<table>
+    <tr>
+        <th>Salesman Name</th>
+        <th>Total Incentive</th>
+        <th>Action</th>
+    </tr>
+    {% for salesman in salesmen %}
+    <tr>
+        <td>{{ salesman.name }}</td>
+        <td>{% if salesman.total_incentive %}{{ salesman.total_incentive }}{% else %}-{% endif %}</td>
+        <td>
+<button onclick="location.href='{% url 'add_incentive_details' salesman.id %}'">
+    Add Details
+</button>
+
+        </td>
+    </tr>
+    {% empty %}
+    <tr>
+        <td colspan="3">No salesmen found.</td>
+    </tr>
+    {% endfor %}
+</table>
+
+{% endblock %}

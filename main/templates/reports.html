@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+
+{% block title %}Reports - IncenTrack{% endblock %}
+
+{% block content %}
+<h2>Incentive Reports</h2>
+
+<!-- Month/Year Filter -->
+<form method="get" style="margin-bottom:15px;">
+    <label for="month">Month:</label>
+    <select name="month" id="month">
+        {% for m in months %}
+        <option value="{{ m }}" {% if m == current_month %}selected{% endif %}>{{ m }}</option>
+        {% endfor %}
+    </select>
+
+    <label for="year">Year:</label>
+    <select name="year" id="year">
+        {% for y in years %}
+        <option value="{{ y }}" {% if y == current_year %}selected{% endif %}>{{ y }}</option>
+        {% endfor %}
+    </select>
+
+    <button type="submit">Filter</button>
+</form>
+
+<p><strong>Month:</strong> {{ current_month }} | <strong>Year:</strong> {{ current_year }}</p>
+
+<!-- Export / Print -->
+<div style="margin-bottom: 15px;">
+    <button onclick="window.print()">Print</button>
+    <button onclick="exportPDF()">Export PDF</button>
+</div>
+
+<!-- Summary Table -->
+<table>
+    <tr>
+        <th>Salesman Name</th>
+        <th>Total Incentive</th>
+    </tr>
+    {% for row in summary_data %}
+    <tr>
+        <td>{{ row.name }}</td>
+        <td>{{ row.total_incentive|floatformat:2 }}</td>
+    </tr>
+    {% empty %}
+    <tr><td colspan="2">No data available</td></tr>
+    {% endfor %}
+</table>
+
+<hr>
+
+<!-- Bar Chart -->
+<h3>Incentives by Salesman</h3>
+<canvas id="barChart" width="600" height="300"></canvas>
+
+<hr>
+
+<!-- Trend Chart -->
+<h3>Monthly Incentive Trend</h3>
+<label for="salesmanSelect">Select Salesman:</label>
+<select id="salesmanSelect">
+    {% for row in summary_data %}
+        <option value="{{ row.name }}">{{ row.name }}</option>
+    {% endfor %}
+</select>
+
+<canvas id="trendChart" width="600" height="300"></canvas>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Bar Chart
+    const ctxBar = document.getElementById('barChart').getContext('2d');
+    new Chart(ctxBar, {
+        type: 'bar',
+        data: {
+            labels: {{ bar_labels|safe }},
+            datasets: [{
+                label: 'Total Incentive',
+                data: {{ bar_values|safe }},
+                backgroundColor: 'rgba(52, 152, 219, 0.7)',
+                borderColor: '#2980b9',
+                borderWidth: 1
+            }]
+        }
+    });
+
+    // Trend Chart data
+    const trendData = {{ trend_data|safe }};
+    const ctxTrend = document.getElementById('trendChart').getContext('2d');
+
+    let defaultSalesman = Object.keys(trendData)[0];
+    let trendChart = new Chart(ctxTrend, {
+        type: 'line',
+        data: {
+            labels: trendData[defaultSalesman].labels,
+            datasets: [{
+                label: defaultSalesman,
+                data: trendData[defaultSalesman].values,
+                fill: false,
+                borderColor: '#27ae60',
+                tension: 0.3
+            }]
+        }
+    });
+
+    document.getElementById("salesmanSelect").addEventListener("change", function() {
+        let selected = this.value;
+        trendChart.data.labels = trendData[selected].labels;
+        trendChart.data.datasets[0].label = selected;
+        trendChart.data.datasets[0].data = trendData[selected].values;
+        trendChart.update();
+    });
+
+    function exportPDF() {
+        window.print();
+    }
+</script>
+{% endblock %}
